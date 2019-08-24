@@ -1,0 +1,5 @@
+# Include the license file
+include LICENSE.txt
+include MANIFEST.in
+recursive-include netprocmon *
+recursive-exclude tests *
