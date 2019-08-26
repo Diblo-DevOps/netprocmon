@@ -30,8 +30,6 @@ P_TCP = 6  # Define the TCP protocol number
 P_UDP = 17 # Define the UDP protocol number
 
 class _ReadOnlyClass(object):
-    """ A main class to make a class non-writable.
-        It is used by classes to be returned. """
     __slots__ = ('__dict__',)
 
     def __setattr__(self, n, v):
@@ -50,7 +48,6 @@ class _ReadOnlyClass(object):
         return "%s(%s)" %(self.__class__.__name__, ", ".join(format_values()))
 
 class port(_ReadOnlyClass):
-    """ A class to hold on port information """
     __slots__ = ('pid', 'family', 'proto', 'port')
 
     pid = None
@@ -64,7 +61,6 @@ class port(_ReadOnlyClass):
         self.port = port
 
 class NetworkTraffic(_ReadOnlyClass):
-    """ A class to hold on network traffic information """
     __slots__ = ('pid', 'interface', 'send', 'recv')
 
     pid = None
@@ -88,7 +84,6 @@ class _PacketSniffer(threading.Thread):
         self._monitor = monitor
         self._count = count
 
-        # Thread
         super(_PacketSniffer, self).__init__()
         self.daemon = False
         self.stop = threading.Event()
@@ -101,12 +96,6 @@ class _PacketSniffer(threading.Thread):
                 # Receive a package
                 packet = s.recvfrom(65565)[0] # It is in a tuple
 
-                # Parse package
-                # Todo: Support WLAN
-                #
-                # See:
-                #  * https://elearning.vector.com/pluginfile.php/266/mod_page/content/7/IP_4.2_GRA_EthernetPacket_EN.png
-                #  * https://nmap.org/book/tcpip-ref.html
                 try:
                     hInfo = struct.unpack('!HBBHHHBBH4s4sHH', packet[12:38])
                     """
@@ -146,17 +135,15 @@ class _PacketSniffer(threading.Thread):
                         self._add_count(pid, ifName, D_RECV, len(packet))
                         continue
 
-                # Take a break if we don't have any ports or addresses that we listen to
                 while not self.stop.is_set() and \
                       (not self._monitor.get_ports() or \
-                       not self._monitor.get_listen_addrs()):
+                       not self._monitor.get_interface_addrs()):
                     time.sleep(1)
         except:
             logging.exception("_PacketSniffer:run:error")
             self.stop.set()
 
     def _add_count(self, pid, ifName, direction, size):
-        """ A method to make the code clearer """
         try:
             self._count.setdefault(pid, {}).setdefault(ifName, {})[direction] += size
         except KeyError:
@@ -179,7 +166,6 @@ class Monitor(threading.Thread):
     def __init__(self):
         self._addrs_if = self._import_interfaces()
 
-        # Thread
         super(Monitor, self).__init__()
         self.daemon = False
         self.stop = threading.Event()
@@ -256,7 +242,7 @@ class Monitor(threading.Thread):
         return traffic
 
 
-    """ Port methods (Only info methods are public) """
+    """ Port methods (Only info methods) """
     def get_ports_by_pid(self, PID):
         """ Get a list of supervise ports based on a process identifiers """
         return self._listen_ports.get(PID, [])
@@ -273,9 +259,8 @@ class Monitor(threading.Thread):
         return ports
 
     def _import_pid_ports(self, PID):
-        """ Create a list of ports that a process uses """
-
         old_ports = self.get_ports_by_pid(PID)
+
         def isPortKnown(port):
             for p in old_ports:
                 if p.proto == port.proto and p.port == port.port:
@@ -325,8 +310,6 @@ class Monitor(threading.Thread):
         return self
 
     def run(self):
-        """ This method is used to keep interface addresses
-            and ports up to date """
         try:
             while not self.stop.is_set():
                 self._addrs_if = self._import_interfaces()

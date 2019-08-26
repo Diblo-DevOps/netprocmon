@@ -78,12 +78,10 @@ Process Identification
 =========
 Listening
 =========
-- **add_address(addr)**:           Add a user specific a listen address; The address should fit with an interface address
-- **get_addresses()**:             Return a list of user specific listen addresses
-- **remove_address(addr)**:        Remove a user specific listen address
-- **clear_addresses()**:           Remove all user specific listen addresses
-- **get_interface_by_addr(addr)**: Return the interface name based on a address; If the address is not listened to, None will be returned
-- **get_listen_addrs()**:          Return a list of interface addresses being listened to
+- **add_address(addr)**:    Add a listen address; It should fit with an interface
+- **get_addresses()**:      Get all listen addresses
+- **remove_address(addr)**: Remove a listen address
+- **clear_addresses()**:    Remove all listen addresses
 
 ===
 Run
@@ -101,3 +99,10 @@ Port Info
 - **get_ports_by_pid(PID)**:     Get a list of supervise ports based on a process identification
 - **get_ports_by_proto(proto)**: Get a list of supervise ports based on TCP or UDP protocol; See P_TCP, P_UDP
 - **get_ports()**:               Get a list of all supervise ports
+
+==============
+Interface Info
+==============
+- **get_interface_by_addr(addr)**:    Return interface name based on addresses
+- **get_interface_addrs()**:          Return all interface addresses
+- **get_addrs_by_interface(ifName)**: Return addresses based on interface name
