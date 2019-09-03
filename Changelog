@@ -1,0 +1,7 @@
+0.0.1rc7
+ * Change interface methods https://github.com/Diblo/netprocmon/commit/06f00b9108bd4f2494d97392ea5144ef41b97f14
+ * Little change in the port class
+ * Update descriptions
+
+0.0.1rc6
+ * Init
