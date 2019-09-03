@@ -328,11 +328,7 @@ class Monitor(threading.Thread):
                 yield isPortKnown(port(PID, P_UDP, con.laddr.port))
 
         process = psutil.Process(PID)
-        listen_ports = list(getPorts(process))
-        for child in process.children(recursive=True):
-            listen_ports.extend(getPorts(child))
-
-        return listen_ports
+        return list(getPorts(process))
 
 
     """ Thread methods """
