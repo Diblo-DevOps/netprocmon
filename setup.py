@@ -26,7 +26,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name = 'netprocmon',
-    version = '0.0.1rc6',
+    version = '0.0.1rc7',
     description = 'Network Process Monitor is a Python API to monitor process traffic',
     long_description = long_description,
     url = 'https://pypi.python.org/pypi/netprocmon',

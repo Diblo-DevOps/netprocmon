@@ -58,12 +58,9 @@ with Monitor() as m:
     if len(m.get_addresses()) != 0:
         raise
     print m.get_addresses()
-
-    print
-    print '""" Interface Info """'
-    print m.get_interface_by_addr("127.0.0.1")
-    print m.get_interface_addrs()
-    print m.get_addrs_by_interface('eth1')
+    print m.get_listen_addrs()
+    print [str(addr) for addr in m.get_listen_interfaces()]
+    print m.get_listen_interface_by_addr("127.0.0.1")
 
     print
     print '""" Port Info """'

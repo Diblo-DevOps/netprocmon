@@ -20,5 +20,5 @@ from netprocmon.monitor import Monitor, P_TCP, P_UDP, D_SEND, D_RECV
 
 __all__ = ['Monitor', 'P_TCP', 'P_UDP', 'D_SEND', 'D_RECV']
 
-__version__ = '0.0.1rc6'
+__version__ = '0.0.1rc7'
 __author__ = 'Henrik Ankersø <henrik@diblo.dk'

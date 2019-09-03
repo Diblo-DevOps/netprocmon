@@ -49,6 +49,18 @@ class _ReadOnlyClass(object):
 
         return "%s(%s)" %(self.__class__.__name__, ", ".join(format_values()))
 
+class Interface(_ReadOnlyClass):
+    """ A class to hold on port information """
+    __slots__ = ('interface', 'address', 'family')
+
+    interface = None
+    address = None
+    family = None
+    def __init__(self, interface, address, family=socket.AF_INET):
+        self.interface = interface
+        self.address = address
+        self.family = family
+
 class port(_ReadOnlyClass):
     """ A class to hold on port information """
     __slots__ = ('pid', 'family', 'proto', 'port')
@@ -133,14 +145,14 @@ class _PacketSniffer(threading.Thread):
                 # Parse TCP or UDP protocol from IP package; Ethertype: IP Protocol number = 8
                 if socket.ntohs(hInfo[0]) == 8 and hInfo[7] in [6, 17]:
                     # Send data
-                    ifName = self._monitor.get_interface_by_addr(socket.inet_ntoa(hInfo[9]))
+                    ifName = self._monitor.get_listen_interface_by_addr(socket.inet_ntoa(hInfo[9]))
                     pid = self._monitor.get_pid_by_port(hInfo[7], hInfo[11])
                     if ifName and pid:
                         self._add_count(pid, ifName, D_SEND, len(packet))
                         continue
 
                     # Receiv data
-                    ifName = self._monitor.get_interface_by_addr(socket.inet_ntoa(hInfo[10]))
+                    ifName = self._monitor.get_listen_interface_by_addr(socket.inet_ntoa(hInfo[10]))
                     pid = self._monitor.get_pid_by_port(hInfo[7], hInfo[12])
                     if ifName and pid:
                         self._add_count(pid, ifName, D_RECV, len(packet))
@@ -149,7 +161,7 @@ class _PacketSniffer(threading.Thread):
                 # Take a break if we don't have any ports or addresses that we listen to
                 while not self.stop.is_set() and \
                       (not self._monitor.get_ports() or \
-                       not self._monitor.get_interface_addrs()):
+                       not self._monitor.get_listen_addrs()):
                     time.sleep(1)
         except:
             logging.exception("_PacketSniffer:run:error")
@@ -216,22 +228,49 @@ class Monitor(threading.Thread):
 
     """ Listening methods """
     def add_address(self, addr):
-        """ Add a listen address; It should fit with an interface """
+        """ Add a listening restriction; The address should
+            fit with an interface address """
         if not addr in self._listen_addrs:
             self._listen_addrs.append(addr)
 
     def get_addresses(self):
-        """ Get all listen addresses """
+        """ Return a list of listening restrictions """
         return self._listen_addrs
 
     def remove_address(self, addr):
-        """ Remove a listen address """
+        """ Remove a listening restriction """
         if addr in self._listen_addrs:
             self._listen_addrs.remove(addr)
 
     def clear_addresses(self):
-        """ Remove all listen addresses """
+        """ Remove all listening restriction """
         self._listen_addrs = []
+
+    def get_listen_addrs(self):
+        """ Return a list of interface addresses
+            that are being listed to """
+        return self._addrs_if.keys()
+
+    def get_listen_interfaces(self):
+        """ Return a list of interfaces and with their
+            addresses that are being listed to """
+        return [Interface(ifName, self._addrs_if[ifName]) for ifName in self._addrs_if]
+
+    def get_listen_interface_by_addr(self, addr):
+        """ Return the interface name based on a address; If the
+            address is not listened to, None will be returned """
+        return self._addrs_if.get(addr, None)
+
+    def _import_interfaces(self):
+        """ Create a list of inetrface addresses """
+        addrs_if = {}
+        NICConfig = psutil.net_if_addrs()
+        for ifName in NICConfig:
+            for ifconfig in NICConfig[ifName]:
+                if ifconfig.family == socket.AF_INET and \
+                   (not self._listen_addrs or ifconfig.address in self._listen_addrs):
+                    addrs_if[ifconfig.address] = ifName
+        return addrs_if
 
 
     """ Run method """
@@ -294,30 +333,6 @@ class Monitor(threading.Thread):
             listen_ports.extend(getPorts(child))
 
         return listen_ports
-
-
-    """ Interface (Only info methods) """
-    def get_interface_by_addr(self, addr):
-        """ Return interface name based on addresses """
-        return self._addrs_if.get(addr, None)
-
-    def get_interface_addrs(self):
-        """ Return all interface addresses """
-        return self._addrs_if.keys()
-
-    def get_addrs_by_interface(self, ifName):
-        """ Return addresses based on interface name """
-        return [addr for addr in self._addrs_if if self._addrs_if[addr] == ifName]
-
-    def _import_interfaces(self):
-        addrs_if = {}
-        NICConfig = psutil.net_if_addrs()
-        for ifName in NICConfig:
-            for ifconfig in NICConfig[ifName]:
-                if ifconfig.family == socket.AF_INET and \
-                   (not self._listen_addrs or ifconfig.address in self._listen_addrs):
-                    addrs_if[ifconfig.address] = ifName
-        return addrs_if
 
 
     """ Thread methods """
