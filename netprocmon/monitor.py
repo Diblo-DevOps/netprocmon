@@ -54,14 +54,14 @@ class port(_ReadOnlyClass):
     __slots__ = ('pid', 'family', 'proto', 'port')
 
     pid = None
-    family = None
     proto = None
     port = None
-    def __init__(self, pid, family, proto, port):
+    family = None
+    def __init__(self, pid, proto, port, family=socket.AF_INET):
         self.pid = pid
-        self.family = family
         self.proto = proto
         self.port = port
+        self.family = family
 
 class NetworkTraffic(_ReadOnlyClass):
     """ A class to hold on network traffic information """
@@ -284,9 +284,9 @@ class Monitor(threading.Thread):
 
         def getPorts(obj):
             for con in obj.connections('tcp4'):
-                yield isPortKnown(port(PID, socket.AF_INET, P_TCP, con.laddr.port))
+                yield isPortKnown(port(PID, P_TCP, con.laddr.port))
             for con in obj.connections('udp4'):
-                yield isPortKnown(port(PID, socket.AF_INET, P_UDP, con.laddr.port))
+                yield isPortKnown(port(PID, P_UDP, con.laddr.port))
 
         process = psutil.Process(PID)
         listen_ports = list(getPorts(process))
