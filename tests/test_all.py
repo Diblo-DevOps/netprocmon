@@ -29,11 +29,8 @@ with Monitor() as m:
         i += 1
     if len(m.get_pids()) != i:
         raise
-    for proc in psutil.process_iter():
-        m.remove_pid(proc.pid)
-        i -= 1
-        break
-    if len(m.get_pids()) != i:
+    m.remove_pid(m.get_pids()[0])
+    if len(m.get_pids()) != i-1:
         raise
     m.clear_pids()
     if len(m.get_pids()) != 0:

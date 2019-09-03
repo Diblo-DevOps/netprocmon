@@ -200,12 +200,12 @@ class Monitor(threading.Thread):
     """ Process identification methods """
     def add_pid(self, PID):
         """ Add a process identification to have the traffic counted """
-        if not self._listen_ports.get(PID, None):
+        if self._listen_ports.get(PID, None) is None:
             self._listen_ports[PID] = self._import_pid_ports(PID)
 
     def remove_pid(self, PID):
         """ Remove a process identification and the traffic count """
-        if self._listen_ports.get(PID, None):
+        if self._listen_ports.get(PID, None) is not None:
             self._listen_ports.pop(PID, None)
             self._count.pop(PID, None)
 
